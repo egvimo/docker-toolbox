@@ -10,9 +10,33 @@ on:
   workflow_dispatch:
 
 jobs:
+  generate-matrix:
+    name: Generate Matrix
+    runs-on: ubuntu-latest
+    outputs:
+      dockerfiles: ${{ steps.matrix.outputs.dockerfiles }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Build matrix from Dockerfiles
+        id: matrix
+        run: |
+          set -euo pipefail
+          DOCKERFILES=$(find ./docker -maxdepth 1 -name "*.Dockerfile" | sed 's|./docker/||')
+          MATRIX=$(echo "$DOCKERFILES" | jq -R -s -c 'split("\n") | map(select(length>0))')
+          echo "Matrix: $MATRIX"
+          echo "dockerfiles=$MATRIX" >> $GITHUB_OUTPUT
+
   build:
     name: Build
+    needs: generate-matrix
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        dockerfile: ${{ fromJson(needs.generate-matrix.outputs.dockerfiles) }}
 
     steps:
       - name: Checkout repository
@@ -32,5 +56,6 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
+          file: docker/${{ matrix.dockerfile }}
           platforms: linux/amd64,linux/arm64
           push: false

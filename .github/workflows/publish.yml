@@ -17,16 +17,32 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v6
 
+      - name: Extract image and version
+        id: image
+        run: |
+          TAG="${{ github.ref_name }}"
+
+          if [[ ! "$TAG" =~ ^(.+)-([0-9]+\.[0-9]+\.[0-9]+)$ ]]; then
+            echo "ERROR: Tag '$TAG' must match '<image>-X.Y.Z'"
+            exit 1
+          fi
+
+          IMAGE="${TAG%-*}"
+          VERSION="${TAG##*-}"
+
+          echo "name=$IMAGE" >> $GITHUB_OUTPUT
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
       - name: Docker meta
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/egvimo/toolbox
+          images: ghcr.io/egvimo/${{ steps.image.outputs.name }}
           tags: |
             type=raw,value=latest
-            type=raw,value=${{ github.ref_name }}
+            type=raw,value=${{ steps.image.outputs.version }}
           labels: |
-            org.opencontainers.image.version=${{ github.ref_name }}
+            org.opencontainers.image.version=${{ steps.image.outputs.version }}
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -49,6 +65,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
+          file: docker/${{ steps.image.outputs.name }}.Dockerfile
           platforms: linux/amd64,linux/arm64
           push: true
           tags: ${{ steps.meta.outputs.tags }}
