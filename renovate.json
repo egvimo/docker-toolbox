@@ -5,7 +5,7 @@
         {
             "customType": "regex",
             "description": "n8n via GitHub releases to filter pre-releases",
-            "managerFilePatterns": ["/^n8n.Dockerfile$/"],
+            "managerFilePatterns": ["/(^|/)n8n.Dockerfile$/"],
             "matchStrings": ["FROM\\sn8nio/n8n:(?<currentValue>[^\\s]+)"],
             "datasourceTemplate": "github-releases",
             "depNameTemplate": "n8n-io/n8n",
@@ -15,7 +15,8 @@
     ],
     "packageRules": [
         {
-            "matchPackageNames": ["n8n", "n8nio/n8n"],
+            "description": "Disable default n8n rule to avoid conflicts with custom manager",
+            "matchPackageNames": ["n8nio/n8n"],
             "matchManagers": ["dockerfile"],
             "enabled": false
         }
