@@ -10,6 +10,8 @@ RUN git clone https://github.com/egvimo/n8n-nodes-apprise.git .
 RUN pnpm install --frozen-lockfile
 RUN pnpm run build
 
-FROM n8nio/n8n:2.1.2
+FROM n8nio/n8n:2.1.3
 
-COPY --from=build --chown=node:node /build/dist /home/node/.n8n/custom/
+COPY --from=build --chown=node:node /build/dist /usr/local/lib/node_modules/n8n-nodes-apprise/
+
+ENV N8N_CUSTOM_EXTENSIONS="/usr/local/lib/node_modules/n8n-nodes-apprise"
