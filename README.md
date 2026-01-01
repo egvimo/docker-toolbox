@@ -1,6 +1,6 @@
-# Toolbox
+# Docker Toolbox
 
-Various tools inside Docker.
+A collection of various Docker images.
 
 ## License
 
