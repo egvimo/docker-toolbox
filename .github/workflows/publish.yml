@@ -107,3 +107,5 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha,scope=${{ steps.image.outputs.name }}.Dockerfile
+          cache-to: type=gha,mode=max,scope=${{ steps.image.outputs.name }}.Dockerfile

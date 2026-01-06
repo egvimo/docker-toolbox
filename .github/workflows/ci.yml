@@ -59,6 +59,8 @@ jobs:
           file: docker/${{ matrix.dockerfile }}
           platforms: linux/amd64,linux/arm64
           push: false
+          cache-from: type=gha,scope=${{ matrix.dockerfile }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.dockerfile }}
 
   tag:
     name: Tag
