@@ -1,4 +1,4 @@
-FROM alpine:3.23.2
+FROM alpine:3.23.3
 
 # tag-version: postgresql18-client
 RUN apk add --no-cache jq
