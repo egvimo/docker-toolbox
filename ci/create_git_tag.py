@@ -45,14 +45,21 @@ def create_tag(tag: str, dry_run: bool) -> None:
 def package_version_to_semver(pkg_version: str) -> str:
     """
     Convert Alpine package version to SemVer-style version.
-    Uses rX as PATCH.
+    Supports:
+    - MAJOR.MINOR-rX       -> MAJOR.MINOR.X
+    - MAJOR.MINOR.PATCH-rX -> MAJOR.MINOR.PATCH
     """
-    match = re.fullmatch(r"(\d+)\.(\d+)-r(\d+)", pkg_version)
-    if not match:
-        raise ValueError(f"Invalid Alpine version: {pkg_version}")
+    match = re.fullmatch(r"(\d+)\.(\d+)\.(\d+)-r(\d+)", pkg_version)
+    if match:
+        major, minor, patch, _ = match.groups()
+        return f"{major}.{minor}.{patch}"
 
-    major, minor, revision = match.groups()
-    return f"{major}.{minor}.{revision}"
+    match = re.fullmatch(r"(\d+)\.(\d+)-r(\d+)", pkg_version)
+    if match:
+        major, minor, revision = match.groups()
+        return f"{major}.{minor}.{revision}"
+
+    raise ValueError(f"Invalid Alpine version: {pkg_version}")
 
 
 def extract_last_from(lines: list[str]) -> tuple[str, str] | None:
