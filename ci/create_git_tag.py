@@ -62,6 +62,26 @@ def package_version_to_semver(pkg_version: str) -> str:
     raise ValueError(f"Invalid Alpine version: {pkg_version}")
 
 
+def image_version_to_semver(version: str) -> str:
+    """
+    Normalize image tag versions (e.g. '26.04', '13.5-slim') to SemVer X.Y.Z.
+
+    - extracts up to three leading numeric components
+    - pads with zeros to ensure three numeric components
+    """
+    m = re.match(r"^(\d+(?:\.\d+){0,2})", version)
+    if not m:
+        raise ValueError(f"Cannot parse image version: {version}")
+
+    numeric = m.group(1)
+    parts = numeric.split(".")
+    norm_parts = [str(int(p)) for p in parts]
+    while len(norm_parts) < 3:
+        norm_parts.append("0")
+
+    return ".".join(norm_parts[:3])
+
+
 def extract_last_from(lines: list[str]) -> tuple[str, str] | None:
     """Extract image name and version from the last FROM statement."""
     for line in reversed(lines):
@@ -120,6 +140,7 @@ def process_dockerfile(
     # Priority 2: Last FROM statement
     elif from_version := extract_last_from(lines):
         _, version = from_version
+        version = image_version_to_semver(version)
         tag = f"{dockerfile_name}-{version}"
     else:
         return
